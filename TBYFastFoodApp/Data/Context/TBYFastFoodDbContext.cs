@@ -23,8 +23,6 @@ namespace TBYFastFoodApp.Data.Context
             optionsBuilder.UseMySql(conexion, ServerVersion.AutoDetect(conexion));
         }
 
- 
-
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

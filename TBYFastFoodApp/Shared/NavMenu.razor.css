@@ -15,25 +15,30 @@
 }
 
     .navbar-brand:hover {
-        color: #1b6ec2;
+        color: #c31c1c;
     }
 
 .nav-item {
     font-size: 1.1rem;
     padding: 0.8rem 1rem;
+    color: #c31c1c;
 }
 
+    .nav-item :hover {
+        color: #ffffff;
+    }
+
     .nav-item a {
-        color: #0071c1;
+        color: #c31c1c;
         text-decoration: none;
     }
 
         .nav-item a:hover {
-            color: #1b6ec2;
+            color: #c31c1c;
         }
 
         .nav-item a.active {
-            color: #1e293b;
+            color: #c31c1c;
             background-color: #1b6ec2;
             border-radius: 4px;
         }
@@ -58,7 +63,9 @@
     }
 }
 
-/* Custom styles */
+
+
+
 
 .top-row {
     display: flex;
