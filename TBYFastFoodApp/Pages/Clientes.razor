@@ -1,0 +1,151 @@
+﻿@page "/clientes"
+@inject IClienteService clienteService
+
+<h3>Clientes</h3>
+
+@if (!mostrarFormulario)
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="MostrarFormulario">Agregar Cliente</button>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div class="mb-3">
+        <h5>Agregar Cliente</h5>
+        <form @onsubmit="AgregarCliente">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" @bind="nuevoCliente.Nombre" required />
+            </div>
+            <div class="form-group">
+                <label for="apellido">Apellido:</label>
+                <input type="text" class="form-control" id="apellido" @bind="nuevoCliente.Apellido" required />
+            </div>
+            <div class="form-group">
+                <label for="direccion">Dirección:</label>
+                <input type="text" class="form-control" id="direccion" @bind="nuevoCliente.Direccion" required />
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" class="form-control" id="telefono" @bind="nuevoCliente.Telefono" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarCliente">Cancelar</button>
+        </form>
+    </div>
+}
+
+<div>
+    <h5>Lista de Clientes</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in clientes)
+            {
+                <tr>
+                    <td>@cliente.Id</td>
+                    <td>@cliente.Nombre</td>
+                    <td>@cliente.Apellido</td>
+                    <td>@cliente.Direccion</td>
+                    <td>@cliente.Telefono</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditarCliente(cliente.Id)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarCliente(cliente.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (clienteSeleccionado != null)
+{
+    <h5>Editar Cliente</h5>
+    <form @onsubmit="GuardarCambios">
+        <div class="form-group">
+            <label for="editNombre">Nombre:</label>
+            <input type="text" class="form-control" id="editNombre" @bind="clienteSeleccionado.Nombre" required />
+        </div>
+        <div class="form-group">
+            <label for="editApellido">Apellido:</label>
+            <input type="text" class="form-control" id="editApellido" @bind="clienteSeleccionado.Apellido" required />
+        </div>
+        <div class="form-group">
+            <label for="editDireccion">Dirección:</label>
+            <input type="text" class="form-control" id="editDireccion" @bind="clienteSeleccionado.Direccion" required />
+        </div>
+        <div class="form-group">
+            <label for="editTelefono">Teléfono:</label>
+            <input type="text" class="form-control" id="editTelefono" @bind="clienteSeleccionado.Telefono" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+    </form>
+}
+
+@code {
+    List<Cliente> clientes;
+    Cliente nuevoCliente;
+    bool mostrarFormulario;
+    Cliente clienteSeleccionado;
+
+    protected override void OnInitialized()
+    {
+        clientes = clienteService.ObtenerClientes();
+        nuevoCliente = new Cliente();
+        mostrarFormulario = false;
+    }
+
+    private void MostrarFormulario()
+    {
+        mostrarFormulario = true;
+    }
+
+    private void AgregarCliente()
+    {
+        clienteService.AgregarCliente(nuevoCliente);
+        clientes = clienteService.ObtenerClientes();
+        nuevoCliente = new Cliente();
+        mostrarFormulario = false;
+    }
+
+    private void CancelarAgregarCliente()
+    {
+        nuevoCliente = new Cliente();
+        mostrarFormulario = false;
+    }
+
+    private void EditarCliente(int id)
+    {
+        clienteSeleccionado = clienteService.ObtenerCliente(id);
+    }
+
+    private void GuardarCambios()
+    {
+        clienteService.ActualizarCliente(clienteSeleccionado.Id, clienteSeleccionado);
+        clientes = clienteService.ObtenerClientes();
+        clienteSeleccionado = null;
+    }
+
+    private void CancelarEdicion()
+    {
+        clienteSeleccionado = null;
+    }
+
+    private void EliminarCliente(int id)
+    {
+        clienteService.EliminarCliente(id);
+        clientes = clienteService.ObtenerClientes();
+    }
+}

@@ -1,0 +1,112 @@
+﻿@page "/registro-usuario"
+@inject IUsuarioService UsuarioService
+
+<h3>Usuarios</h3>
+
+@if (!mostrarFormulario)
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="MostrarFormulario">Agregar nuevo usuario</button>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div class="mb-3">
+        <h5>Agregar Usuario</h5>
+        <form @onsubmit="AgregarUsuario">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" @bind="nuevoUsuario.Nombre" />
+            </div>
+            <div class="form-group">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" class="form-control" id="contrasena" @bind="nuevoUsuario.Contraseña" />
+            </div>
+            <div class="form-group">
+                <label for="privilegio">Privilegio:</label>
+                <select class="form-control" id="privilegio" @bind="nuevoUsuario.Privilegio">
+                    <option value="Gerente">Gerente</option>
+                    <option value="Cajero">Cajero</option>
+                    <option value="Cocinero">Cocinero</option>
+                </select>
+            </div>
+            <button class="btn btn-success">Registrar Usuario</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarRegistro">Cancelar</button>
+        </form>
+    </div>
+}
+
+@if (nuevoUsuarioAgregado)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        Usuario registrado correctamente.
+    </div>
+}
+
+@if (usuarios != null && usuarios.Any())
+{
+    <div>
+        <h5>Usuarios registrados:</h5>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Privilegio</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var usuario in usuarios)
+                {
+                    <tr>
+                        <td>@usuario.Nombre</td>
+                        <td>@usuario.Privilegio</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" @onclick="() => EliminarUsuario(usuario.Id)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private Usuario nuevoUsuario = new Usuario();
+    private bool mostrarFormulario = false;
+    private bool nuevoUsuarioAgregado = false;
+    private List<Usuario> usuarios;
+
+    protected override void OnInitialized()
+    {
+        usuarios = UsuarioService.ObtenerUsuarios();
+    }
+
+    private void MostrarFormulario()
+    {
+        nuevoUsuarioAgregado = false;
+        mostrarFormulario = true;
+    }
+
+    private void AgregarUsuario()
+    {
+        UsuarioService.RegistrarUsuario(nuevoUsuario);
+        nuevoUsuarioAgregado = true;
+        mostrarFormulario = false;
+        nuevoUsuario = new Usuario();
+        usuarios = UsuarioService.ObtenerUsuarios();
+    }
+
+    private void CancelarRegistro()
+    {
+        mostrarFormulario = false;
+        nuevoUsuario = new Usuario();
+    }
+
+    private void EliminarUsuario(int usuarioId)
+    {
+        UsuarioService.EliminarUsuario(usuarioId);
+        usuarios = UsuarioService.ObtenerUsuarios();
+    }
+}

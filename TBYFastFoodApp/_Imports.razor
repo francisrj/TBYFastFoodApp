@@ -1,0 +1,31 @@
+﻿@using System.Net.Http;
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization;
+@using Microsoft.AspNetCore.Components.Forms;
+@using Microsoft.AspNetCore.Components.Routing;
+@using Microsoft.AspNetCore.Components.Web;
+@using Microsoft.AspNetCore.Components.Web.Virtualization;
+@using Microsoft.JSInterop;
+@using TBYFastFoodApp;
+@using TBYFastFoodApp.Shared;
+@using Microsoft.AspNetCore.Components;
+@using TBYFastFoodApp.Data;
+@using TBYFastFoodApp.Data.Context;
+@using TBYFastFoodApp.Data.Services;
+@using Microsoft.EntityFrameworkCore;
+@using Pomelo.EntityFrameworkCore.MySql;
+@using System;
+@using System.Collections.Generic;
+@using System.IO;
+@using System.Linq;
+@using System.Threading.Tasks;
+@using TBYFastFoodApp.Data.Request;
+@using TBYFastFoodApp.Data.Response;
+@using Microsoft.AspNetCore.Http;
+
+
+
+@inject IClienteService clienteService;
+@inject IServicioService servicioService;
+@inject IPedidoService pedidoService;
+@inject IUsuarioService usuarioService;

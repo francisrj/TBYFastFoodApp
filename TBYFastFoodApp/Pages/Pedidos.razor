@@ -1,0 +1,201 @@
+﻿@page "/pedidos"
+@inject IPedidoService pedidoService
+@inject IClienteService clienteService
+@inject IServicioService servicioService
+
+<h3>Pedidos</h3>
+
+@if (!mostrarFormulario)
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="MostrarFormulario">Agregar Pedido</button>
+    </div>
+}
+
+@if (mostrarFormulario)
+{
+    <div class="mb-3">
+        <h5>Agregar Pedido</h5>
+        <form @onsubmit="AgregarPedido">
+            <div class="form-group">
+                <label for="clienteId">Cliente:</label>
+                <select class="form-control" id="clienteId" @bind="nuevoPedido.ClienteId" required>
+                    @foreach (var cliente in clientes)
+                    {
+                        <option value="@cliente.Id">@cliente.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="servicioId">Servicio:</label>
+                <select class="form-control" id="servicioId" @bind="nuevoPedido.ServicioId" required>
+                    @foreach (var servicio in servicios)
+                    {
+                        <option value="@servicio.Id">@servicio.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tipoEntrega">Tipo de Entrega:</label>
+                <select class="form-control" id="tipoEntrega" @bind="nuevoPedido.TipoEntrega" required>
+                    <option value="Fisica">Fisica</option>
+                    <option value="Delivery">Delivery</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarPedido">Cancelar</button>
+        </form>
+    </div>
+}
+
+<div>
+    <h5>Lista de Pedidos</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Hora</th>
+                <th>Tipo de Entrega</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pedido in pedidos)
+            {
+                <tr>
+                    <td>@pedido.Id</td>
+                    <td>@pedido.Cliente.Nombre</td>
+                    <td>@pedido.Servicio.Nombre</td>
+                    <td>@pedido.Fecha.ToString("HH:mm")</td>
+                    <td>@pedido.TipoEntrega</td>
+                    <td>@CalcularTotal(pedido).ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => MostrarDetallesPedido(pedido.Id)">Detalles</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarPedido(pedido.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (pedidoSeleccionado != null)
+{
+    <div>
+        <h5>Detalles del Pedido</h5>
+        <p><strong>Cliente:</strong> @pedidoSeleccionado.Cliente.Nombre</p>
+        <p><strong>Dirección:</strong> @pedidoSeleccionado.Cliente.Direccion</p>
+        <p><strong>Servicio:</strong> @pedidoSeleccionado.Servicio.Descripcion</p>
+        <p><strong>Hora:</strong> @pedidoSeleccionado.Fecha.ToString("HH:mm")</p>
+        <p><strong>Tipo de Entrega:</strong> @pedidoSeleccionado.TipoEntrega</p>
+        <p><strong>Total:</strong> @CalcularTotal(pedidoSeleccionado).ToString("C")</p>
+        <button class="btn btn-primary" @onclick="CancelarDetallesPedido">Cerrar Detalles</button>
+    </div>
+}
+
+@code {
+    List<Pedido> pedidos;
+    List<Cliente> clientes;
+    List<Servicio> servicios;
+    Pedido nuevoPedido;
+    Pedido pedidoSeleccionado;
+    bool mostrarFormulario;
+
+    protected override void OnInitialized()
+    {
+        pedidos = pedidoService.ObtenerPedidos();
+        clientes = clienteService.ObtenerClientes();
+        servicios = servicioService.ObtenerServicios();
+        nuevoPedido = new Pedido();
+        mostrarFormulario = false;
+    }
+
+    void MostrarFormulario()
+    {
+        mostrarFormulario = true;
+    }
+
+    void CancelarAgregarPedido()
+    {
+        mostrarFormulario = false;
+        nuevoPedido = new Pedido();
+    }
+
+    void AgregarPedido()
+    {
+        nuevoPedido.Fecha = DateTime.Now;
+
+        if (nuevoPedido.TipoEntrega.ToString() == "Delivery")
+        {
+            if (nuevoPedido.Servicio != null)
+            {
+                nuevoPedido.Total = nuevoPedido.Servicio.Precio + 50;
+            }
+            else
+            {
+                nuevoPedido.Total = 0;
+            }
+        }
+        else
+        {
+            if (nuevoPedido.Servicio != null)
+            {
+                nuevoPedido.Total = nuevoPedido.Servicio.Precio;
+            }
+            else
+            {
+                nuevoPedido.Total = 0;
+            }
+        }
+
+        pedidoService.AgregarPedido(nuevoPedido);
+        pedidos = pedidoService.ObtenerPedidos();
+        mostrarFormulario = false;
+        nuevoPedido = new Pedido();
+    }
+
+    void MostrarDetallesPedido(int pedidoId)
+    {
+        pedidoSeleccionado = pedidoService.ObtenerPedido(pedidoId);
+    }
+
+    void CancelarDetallesPedido()
+    {
+        pedidoSeleccionado = null;
+    }
+
+    void EliminarPedido(int pedidoId)
+    {
+        pedidoService.EliminarPedido(pedidoId);
+        pedidos = pedidoService.ObtenerPedidos();
+    }
+
+    decimal CalcularTotal(Pedido pedido)
+    {
+        if (pedido.TipoEntrega.ToString() == "Delivery")
+        {
+            if (pedido.Servicio != null)
+            {
+                return pedido.Servicio.Precio + 50;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            if (pedido.Servicio != null)
+            {
+                return pedido.Servicio.Precio;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+}

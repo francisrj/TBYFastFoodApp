@@ -1,0 +1,146 @@
+﻿@page "/servicios"
+@inject IServicioService servicioService
+
+<h3>Servicios</h3>
+
+
+@if (!mostrarFormulario)
+{
+    <div class="mb-3">
+        <button class="btn btn-primary" @onclick="MostrarFormulario">Agregar Servicio</button>
+    </div>
+}
+
+
+@if (mostrarFormulario)
+{
+    <div class="mb-3">
+        <h5>Agregar Servicio</h5>
+        <form @onsubmit="AgregarServicio">
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" class="form-control" id="nombre" @bind="nuevoServicio.Nombre" required />
+            </div>
+            <div class="form-group">
+                <label for="descripcion">Descripción:</label>
+                <textarea class="form-control" id="descripcion" @bind="nuevoServicio.Descripcion"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="precio">Precio:</label>
+                <input type="number" class="form-control" id="precio" @bind="nuevoServicio.Precio" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Agregar</button>
+            <button type="button" class="btn btn-secondary" @onclick="CancelarAgregarServicio">Cancelar</button>
+        </form>
+    </div>
+}
+
+
+<div>
+    <h5>Lista de Servicios</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var servicio in servicios)
+            {
+                <tr>
+                    <td>@servicio.Id</td>
+                    <td>@servicio.Nombre</td>
+                    <td>@servicio.Descripcion</td>
+                    <td>@servicio.Precio.ToString("0.00")</td>
+
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => EditarServicio(servicio.Id)">Editar</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => EliminarServicio(servicio.Id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Formulario de Edición de Servicio -->
+@if (servicioSeleccionado != null)
+{
+    <h5>Editar Servicio</h5>
+    <form @onsubmit="GuardarCambios">
+        <div class="form-group">
+            <label for="editNombre">Nombre:</label>
+            <input type="text" class="form-control" id="editNombre" @bind="servicioSeleccionado.Nombre" required />
+        </div>
+        <div class="form-group">
+            <label for="editDescripcion">Descripción:</label>
+            <textarea class="form-control" id="editDescripcion" @bind="servicioSeleccionado.Descripcion"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="editPrecio">Precio:</label>
+            <input type="number" class="form-control" id="editPrecio" @bind="servicioSeleccionado.Precio" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelarEdicion">Cancelar</button>
+    </form>
+}
+
+@code {
+    List<Servicio> servicios;
+    Servicio nuevoServicio;
+    bool mostrarFormulario;
+    Servicio servicioSeleccionado;
+
+    protected override void OnInitialized()
+    {
+        servicios = servicioService.ObtenerServicios();
+        nuevoServicio = new Servicio();
+        mostrarFormulario = false;
+    }
+
+    private void MostrarFormulario()
+    {
+        mostrarFormulario = true;
+    }
+
+    private void AgregarServicio()
+    {
+        servicioService.AgregarServicio(nuevoServicio);
+        servicios = servicioService.ObtenerServicios();
+        nuevoServicio = new Servicio();
+        mostrarFormulario = false;
+    }
+
+    private void CancelarAgregarServicio()
+    {
+        nuevoServicio = new Servicio();
+        mostrarFormulario = false;
+    }
+
+    private void EditarServicio(int id)
+    {
+        servicioSeleccionado = servicioService.ObtenerServicio(id);
+    }
+
+    private void GuardarCambios()
+    {
+        servicioService.ActualizarServicio(servicioSeleccionado.Id, servicioSeleccionado);
+        servicios = servicioService.ObtenerServicios();
+        servicioSeleccionado = null;
+    }
+
+    private void CancelarEdicion()
+    {
+        servicioSeleccionado = null;
+    }
+
+    private void EliminarServicio(int id)
+    {
+        servicioService.EliminarServicio(id);
+        servicios = servicioService.ObtenerServicios();
+    }
+}
